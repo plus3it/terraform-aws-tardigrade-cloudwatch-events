@@ -4,6 +4,7 @@ variable "event_rule" {
     name          = string
     description   = optional(string)
     event_pattern = optional(string)
+    event_bus_name = optional(string)
 
     event_targets = optional(list(object({
       name = string
