@@ -1,24 +1,24 @@
 resource "aws_cloudwatch_event_rule" "this" {
-  for_each = { for item in var.cloudwatch_rule : item.event_rule.name => item }
 
-  name          = each.value.event_rule.name
-  description   = each.value.event_rule.description
-  event_pattern = each.value.event_rule.event_pattern
+  name          = var.event_rule.name
+  description   = var.event_rule.description
+  event_pattern = var.event_rule.event_pattern
 }
 
-
 resource "aws_cloudwatch_event_target" "this" {
-  for_each = { for item in var.cloudwatch_rule : item.event_target.event_name => item }
 
-  arn       = each.value.event_target.event_target_arn
-  rule      = each.value.event_target.event_name
-  target_id = each.value.event_target.event_target_id
-  role_arn  = each.value.event_target.role_arn
+  for_each = { for target in var.event_rule.event_targets : target.name => target }
 
-  input_transformer {
-    input_paths = each.value.event_target.input_transformer.input_paths
+  arn       = each.value.arn
+  rule      = aws_cloudwatch_event_rule.this.id
+  target_id = each.value.target_id
+  role_arn  = each.value.role_arn
 
-    input_template = each.value.event_target.input_template
+  dynamic "input_transformer" {
+    for_each = each.value.input_transformer != null ? [each.value.input_transformer] : []
+    content {
+      input_paths    = input_transformer.value.input_paths
+      input_template = input_transformer.value.input_template
+    }
   }
-  depends_on = [aws_cloudwatch_event_rule.this]
 }
