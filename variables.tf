@@ -1,20 +1,26 @@
-variable "cloudwatch_rule" {
-  description = "Object of input configs for cloudwatch event rules"
-  type = list(object({
-    event_rule = object({
-      name          = string
-      description   = string
-      event_pattern = string
-    })
-    event_target = object({
-      event_name       = string
-      event_target_id  = optional(string)
-      event_target_arn = string
-      role_arn         = string
-      input_transformer = object({
-        input_paths = map(string)
-      })
-      input_template = string
-    })
-  }))
+variable "event_rule" {
+  description = "Object of input configs for the CloudWatch Event Rule"
+  type = object({
+    name          = string
+    description   = optional(string)
+    event_pattern = optional(string)
+
+    event_targets = optional(list(object({
+      name = string
+      arn  = string
+
+      event_bus_name = optional(string)
+      role_arn       = optional(string)
+      target_id      = optional(string)
+
+      dead_letter_config = optional(object({
+        arn = string
+      }))
+
+      input_transformer = optional(object({
+        input_paths    = optional(map(string))
+        input_template = string
+      }))
+    })), [])
+  })
 }
